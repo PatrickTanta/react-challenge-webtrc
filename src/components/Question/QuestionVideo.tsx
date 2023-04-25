@@ -1,4 +1,4 @@
-import { useRef, useEffect, FC } from 'react'
+import { useRef, useEffect, FC, useState } from 'react'
 import { PlayIcon } from '../icons/PlayIcon'
 
 interface Props {
@@ -7,22 +7,66 @@ interface Props {
 }
 
 export const QuestionVideo: FC<Props> = ({ isDetail, text }) => {
+    const [blob, setBlob] = useState([])
+    const [stream, setStream] = useState<MediaStream | null>(null)
+    const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
+    const [recordedVideoUrl, setRecordedVideoUrl] = useState('')
     const videoRef = useRef<HTMLVideoElement>(null)
 
-    useEffect(() => {
-        async function getUserMedia() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream
-                    // videoRef.current.play()
-                }
-            } catch (error) {
-                console.log('Error accessing media devices: ', error)
-            }
-        }
+    const startRecording = async () => {
+        if (!(await hasPermissions())) return
+        try {
+            console.log('videoRef ', videoRef, ' ', videoRef.current)
+            console.log('stream ', stream)
 
-        getUserMedia()
+            if (!videoRef.current) return
+
+            videoRef.current.srcObject = stream
+            const mediaRecorder = new MediaRecorder(stream!, { mimeType: 'video/webm; codecs=vp9' })
+
+            mediaRecorder.ondataavailable = (e) => {
+                setBlob((prevState): any => {
+                    return [...prevState, e.data]
+                })
+            }
+            mediaRecorder.onstop = () => {
+                const blobObj = new Blob(blob, { type: 'video/webm' })
+                const url = URL.createObjectURL(blobObj)
+                setRecordedVideoUrl(url)
+            }
+            setMediaRecorder(mediaRecorder)
+            mediaRecorder.start()
+        } catch (e) {
+            console.log('Error accessing media devices', e)
+        }
+    }
+
+    const hasPermissions: () => Promise<boolean> = async () => {
+        console.log('start hasPermissions ')
+        if (stream) return true
+        try {
+            const streamNavigator = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            console.log('streamNavigator ', streamNavigator)
+            setStream(streamNavigator)
+            return true
+        } catch (e) {
+            console.error('navigator.getUserMedia error:', e)
+            return false
+        }
+    }
+    useEffect(() => {
+        // async function getUserMedia() {
+        //     try {
+        //         console.log('videoRef ', videoRef)
+        //         if (videoRef.current) {
+        //             videoRef.current.srcObject = stream
+        //             // videoRef.current.play()
+        //         }
+        //     } catch (error) {
+        //         console.log('Error accessing media devices: ', error)
+        //     }
+        // }
+        // getUserMedia()
     }, [])
 
     return (
@@ -33,7 +77,10 @@ export const QuestionVideo: FC<Props> = ({ isDetail, text }) => {
         >
             <div className="relative flex-grow overflow-hidden">
                 <video ref={videoRef} className="h-full w-full rounded-t-lg bg-black"></video>
-                <button className="absolute bottom-2 left-2 flex h-12 w-12 items-center justify-center rounded-full bg-play-btn focus:outline-none">
+                <button
+                    className="absolute bottom-2 left-2 flex h-12 w-12 items-center justify-center rounded-full bg-play-btn focus:outline-none"
+                    onClick={() => startRecording()}
+                >
                     <PlayIcon />
                 </button>
             </div>

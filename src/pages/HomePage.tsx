@@ -1,8 +1,8 @@
-import { QuestionVideo } from '../components/Question/QuestionVideo'
-import { BaseLayout } from '../components/layouts/Base'
-import { AddQuestionInput } from '../components/Question/AddQuestionInput'
-import { useForm } from '../hooks/useAddForm'
-import { Question } from '../interfaces'
+import { QuestionVideo } from '@/components/Question/QuestionVideo'
+import { BaseLayout } from '@/components/layouts/Base'
+import { AddQuestionInput } from '@/components/Question/AddQuestionInput'
+import { useForm } from '@/hooks/useAddForm'
+import { Question } from '@/interfaces'
 import { useState, FormEventHandler } from 'react'
 
 const INITIAL_QUESTION_LIST: Question[] = [
