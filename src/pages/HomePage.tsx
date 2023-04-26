@@ -8,11 +8,13 @@ import { useState, FormEventHandler } from 'react'
 const INITIAL_QUESTION_LIST: Question[] = [
     {
         id: 0,
-        text: 'Cual fue tu video juego favorito durante tu infancia?'
+        text: 'Cual fue tu video juego favorito durante tu infancia?',
+        recordedVideo: null
     },
     {
         id: 1,
-        text: 'Cual fue tu serie favorita durante tu infancia?'
+        text: 'Cual fue tu serie favorita durante tu infancia?',
+        recordedVideo: null
     }
 ]
 
@@ -30,6 +32,16 @@ export const HomePage = () => {
                 }
             ]
         })
+    }
+
+    const onSetQuestionVideo = (id: number, value: any) => {
+        const questionsList = [...questions]
+        const currentItem = questionsList.find((item) => item.id === id)
+        if (currentItem) {
+            currentItem.recordedVideo = value
+            console.log('questionsList ', questionsList)
+            setQuestions(questionsList)
+        }
     }
 
     const { handleInputChange, values } = useForm({
@@ -53,7 +65,13 @@ export const HomePage = () => {
 
                 <div className="mt-10 flex flex-col flex-wrap justify-center gap-4 sm:flex-row">
                     {questions.map((question) => (
-                        <QuestionVideo key={question.id} text={question.text} />
+                        <QuestionVideo
+                            key={question.id}
+                            id={question.id}
+                            text={question.text}
+                            recordedVideo={question.recordedVideo}
+                            onSetQuestionVideo={onSetQuestionVideo}
+                        />
                     ))}
                 </div>
             </div>
